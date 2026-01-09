@@ -12,10 +12,7 @@ export function isGeminiConfigured(): boolean {
 }
 
 // Use browser's Web Speech API for transcription (free, no API needed)
-export async function transcribeAudio(audioFile: File): Promise<string> {
-  // Create an audio element to play the file
-  const audioUrl = URL.createObjectURL(audioFile);
-  
+export async function transcribeAudio(_audioFile: File): Promise<string> {
   return new Promise((resolve, reject) => {
     // Check if Web Speech API is available
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
