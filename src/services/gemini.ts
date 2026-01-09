@@ -1,31 +1,25 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { OnsiteVisit, SELLING_OPPORTUNITIES, SellingOpportunity } from '../types';
 
-let genAI: GoogleGenerativeAI | null = null;
+let apiKey: string | null = null;
 
-export function initializeGemini(apiKey: string): void {
-  genAI = new GoogleGenerativeAI(apiKey);
+export function initializeGemini(key: string): void {
+  apiKey = key;
 }
 
 export function isGeminiConfigured(): boolean {
-  return genAI !== null;
+  return apiKey !== null && apiKey.length > 0;
 }
 
 // Use browser's Web Speech API for transcription (free, no API needed)
 export async function transcribeAudio(_audioFile: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Check if Web Speech API is available
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      // Fallback: return a message asking user to type
       reject(new Error('Speech recognition not supported. Please type your response instead.'));
       return;
     }
 
-    // For recorded audio, we'll use a simpler approach:
-    // Return a placeholder and let user edit/type
-    // Real-time transcription would need the audio to be played
     resolve('(Audio recorded - please type or edit your response below)');
   });
 }
@@ -73,12 +67,9 @@ export function createSpeechRecognition(onResult: (text: string) => void, onEnd:
 }
 
 export async function generateSummary(visit: OnsiteVisit): Promise<string> {
-  if (!genAI) {
+  if (!apiKey) {
     throw new Error('Gemini not configured. Please add your API key.');
   }
-
-  // Use gemini-1.0-pro for text generation (explicit version name)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
 
   const promptSections = visit.prompts.map(p => {
     const content = p.transcription || p.textInput;
@@ -154,7 +145,34 @@ Please generate a polished executive summary that:
 
 Format the output in clean Markdown with clear sections. The NEXT STEPS section should be prominently displayed with clear formatting so it's impossible to miss. Use checkboxes (- [ ]) for each action item.`;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  return response.text();
+  // Use REST API directly with v1 endpoint (not v1beta)
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Gemini API error:', error);
+    throw new Error(error.error?.message || 'Failed to generate summary');
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Failed to generate summary.';
 }
