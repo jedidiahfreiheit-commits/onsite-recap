@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <!-- Hexagon with S -->
+  <g transform="translate(0, 5)">
+    <path d="M45 0L84.6 22.5V67.5L45 90L5.4 67.5V22.5L45 0Z" fill="#E85A5A"/>
+    <!-- S shape made of bands -->
+    <path d="M60 27H52L32 50V58H40L60 35V27Z" fill="white"/>
+    <path d="M30 27V35L40 27H30Z" fill="white"/>
+    <path d="M60 58V50L50 58H60Z" fill="white"/>
+  </g>
+  
+  <!-- Text: shiphero™ -->
+  <text x="100" y="62" font-family="Proxima Nova, Montserrat, system-ui, sans-serif" font-size="42" font-weight="600">
+    <tspan fill="#2D3748">ship</tspan><tspan fill="#E85A5A">hero</tspan><tspan fill="#2D3748" font-size="20" baseline-shift="super">™</tspan>
+  </text>
+</svg>
+

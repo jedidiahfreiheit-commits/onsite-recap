@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Hexagon background -->
+  <path d="M50 3 L91 27 L91 73 L50 97 L9 73 L9 27 Z" fill="#D96A5D"/>
+  
+  <!-- Upper S-ribbon band -->
+  <path d="
+    M71 28 
+    L71 38 
+    L41 55 
+    L26 47 
+    L26 37 
+    L41 45 
+    Z
+  " fill="white"/>
+  <path d="
+    M26 37 
+    L26 47 
+    L18 42 
+    L18 32 
+    Z
+  " fill="white"/>
+  
+  <!-- Lower S-ribbon band -->
+  <path d="
+    M74 53 
+    L74 63 
+    L59 55 
+    L59 71 
+    L28 53 
+    L28 63 
+    L49 76 
+    L49 60 
+    Z
+  " fill="white"/>
+  <path d="
+    M74 53 
+    L82 58 
+    L82 68 
+    L74 63 
+    Z
+  " fill="white"/>
+</svg>
