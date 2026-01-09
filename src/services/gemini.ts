@@ -77,8 +77,8 @@ export async function generateSummary(visit: OnsiteVisit): Promise<string> {
     throw new Error('Gemini not configured. Please add your API key.');
   }
 
-  // Use gemini-pro for text generation
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  // Use gemini-1.0-pro for text generation (explicit version name)
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
 
   const promptSections = visit.prompts.map(p => {
     const content = p.transcription || p.textInput;
