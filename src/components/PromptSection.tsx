@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Play, Pause, Trash2, Check } from 'lucide-react';
+import { ChevronDown, Play, Pause, Trash2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioRecorder } from './AudioRecorder';
 import { FileUpload } from './FileUpload';

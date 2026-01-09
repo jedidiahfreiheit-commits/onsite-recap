@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Mic, Square, Play, Pause, Trash2, Loader2, Check, SkipForward, Clock, Package } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Mic, Square, Play, Pause, Trash2, Loader2, Check, SkipForward, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PromptData, SellingOpportunity, SELLING_OPPORTUNITIES } from '../types';
 
-const MAX_RECORDING_SECONDS = 120; // 2 minutes per prompt
+const MAX_RECORDING_SECONDS = 300; // 5 minutes max recording time
 
 interface PromptFlowProps {
   prompts: PromptData[];
@@ -35,6 +35,21 @@ export function PromptFlow({
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [timerInterval, setTimerInterval] = useState<number | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  // Auto-stop recording at max time
+  useEffect(() => {
+    if (isRecording && recordingTime >= MAX_RECORDING_SECONDS) {
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          setTimerInterval(null);
+        }
+      }
+    }
+  }, [recordingTime, isRecording, timerInterval]);
 
   const currentPrompt = prompts[currentIndex];
   const hasContent = currentPrompt?.audioUrl || currentPrompt?.textInput || currentPrompt?.transcription;
@@ -81,6 +96,7 @@ export function PromptFlow({
 
       recorder.start();
       setMediaRecorder(recorder);
+      mediaRecorderRef.current = recorder;
       setIsRecording(true);
       setRecordingTime(0);
 
@@ -231,7 +247,7 @@ export function PromptFlow({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {(Object.keys(SELLING_OPPORTUNITIES) as SellingOpportunity[]).map((opp) => {
                     const isSelected = sellingOpportunities.includes(opp);
-                    const { label, description } = SELLING_OPPORTUNITIES[opp];
+                    const { label } = SELLING_OPPORTUNITIES[opp];
                     return (
                       <button
                         key={opp}
@@ -345,7 +361,7 @@ export function PromptFlow({
                   <Square className="w-10 h-10 text-white fill-current" />
                 </motion.button>
                 
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-3 w-full">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
                       {[...Array(4)].map((_, i) => (
@@ -358,7 +374,19 @@ export function PromptFlow({
                       ))}
                     </div>
                     <span className="text-3xl font-mono text-gray-900">{formatTime(recordingTime)}</span>
+                    <span className="text-gray-400">/ {formatTime(MAX_RECORDING_SECONDS)}</span>
                   </div>
+                  
+                  {/* Progress bar */}
+                  <div className="w-full max-w-xs h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-shiphero-red"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(recordingTime / MAX_RECORDING_SECONDS) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-gray-500">{formatTime(MAX_RECORDING_SECONDS - recordingTime)} remaining</p>
+                  
                   <p className="text-gray-500 text-lg">Tap the button when you're done</p>
                 </div>
               </div>
