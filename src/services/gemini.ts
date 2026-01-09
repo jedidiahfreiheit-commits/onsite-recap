@@ -22,7 +22,7 @@ export async function transcribeAudio(audioFile: File): Promise<string> {
     new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
   );
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
   const result = await model.generateContent([
     {
@@ -43,7 +43,7 @@ export async function generateSummary(visit: OnsiteVisit): Promise<string> {
     throw new Error('Gemini not configured. Please add your API key.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
 
   const promptSections = visit.prompts.map(p => {
     const content = p.transcription || p.textInput;
