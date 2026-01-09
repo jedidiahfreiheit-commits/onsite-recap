@@ -47,7 +47,7 @@ export default function App() {
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [geminiKey, setGeminiKey] = useState('');
+  const [geminiKey, setGeminiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [googleClientId, setGoogleClientId] = useState('');
 
   // Customer info recording state
@@ -63,9 +63,11 @@ export default function App() {
     const savedGeminiKey = localStorage.getItem('gemini-api-key');
     const savedGoogleClientId = localStorage.getItem('google-client-id');
     
-    if (savedGeminiKey) {
-      setGeminiKey(savedGeminiKey);
-      initializeGemini(savedGeminiKey);
+    // Use saved key, env variable, or empty
+    const keyToUse = savedGeminiKey || import.meta.env.VITE_GEMINI_API_KEY || '';
+    if (keyToUse) {
+      setGeminiKey(keyToUse);
+      initializeGemini(keyToUse);
     }
     
     if (savedGoogleClientId) {

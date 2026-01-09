@@ -4,8 +4,8 @@
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
-// ShipHero Onsite Recap folder
-const DRIVE_FOLDER_ID = '1LKBsOj2NeTWtyAcZv8JMMrO48IPFUtW7';
+// ShipHero Onsite Recap folder - uses env variable or fallback
+const DRIVE_FOLDER_ID = import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_ID || '1LKBsOj2NeTWtyAcZv8JMMrO48IPFUtW7';
 
 interface GoogleAuth {
   isSignedIn: boolean;
