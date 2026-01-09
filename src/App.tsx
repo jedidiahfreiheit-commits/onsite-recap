@@ -678,12 +678,12 @@ export default function App() {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-2">Gemini API Key</label>
+                  <label className="block text-sm text-gray-600 mb-2">OpenAI API Key</label>
                   <input
                     type="password"
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
-                    placeholder="AIza..."
+                    placeholder="sk-..."
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-shiphero-blue"
                   />
                   <p className="text-xs text-gray-500 mt-1">Required for transcription and summaries</p>
@@ -721,7 +721,7 @@ export default function App() {
                 <div className="flex items-center gap-2 text-sm">
                   <div className={`w-2 h-2 rounded-full ${isGeminiConfigured() ? 'bg-green-500' : 'bg-gray-400'}`} />
                   <span className={isGeminiConfigured() ? 'text-green-600' : 'text-gray-500'}>
-                    Gemini AI {isGeminiConfigured() ? 'Connected' : 'Not configured'}
+                    OpenAI {isGeminiConfigured() ? 'Connected' : 'Not configured'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
