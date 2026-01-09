@@ -176,3 +176,4 @@ Format the output in clean Markdown with clear sections. The NEXT STEPS section 
   const data = await response.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Failed to generate summary.';
 }
+// Deploy 1767995653
