@@ -145,36 +145,57 @@ Please generate a polished executive summary that:
 
 Format the output in clean Markdown with clear sections. The NEXT STEPS section should be prominently displayed with clear formatting so it's impossible to miss. Use checkboxes (- [ ]) for each action item.`;
 
-  // Use OpenAI API (more reliable)
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional Customer Success Manager creating comprehensive visit reports. Write in a clear, concise, and actionable style.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      max_tokens: 4000,
-      temperature: 0.7,
-    })
-  });
+  // Try multiple Gemini model names until one works
+  const modelsToTry = [
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-flash-latest', 
+    'gemini-1.5-flash',
+    'gemini-pro'
+  ];
 
-  if (!response.ok) {
-    const error = await response.json();
-    console.error('OpenAI API error:', error);
-    throw new Error(error.error?.message || 'Failed to generate summary');
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4096,
+            }
+          })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          console.log(`Successfully used model: ${modelName}`);
+          return text;
+        }
+      } else {
+        const error = await response.json();
+        console.log(`Model ${modelName} failed:`, error.error?.message);
+        lastError = error;
+      }
+    } catch (err) {
+      console.log(`Model ${modelName} error:`, err);
+      lastError = err;
+    }
   }
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || 'Failed to generate summary.';
+  // If all models failed, throw the last error
+  throw new Error(lastError?.error?.message || 'Failed to generate summary. Please check your API key.');
 }
