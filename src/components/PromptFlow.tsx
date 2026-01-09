@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Mic, Square, Play, Pause, Trash2, Loader2, Check, SkipForward, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PromptData, SellingOpportunity, SELLING_OPPORTUNITIES } from '../types';
+import { createSpeechRecognition } from '../services/gemini';
 
 const MAX_RECORDING_SECONDS = 300; // 5 minutes max recording time
 
@@ -35,7 +36,9 @@ export function PromptFlow({
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [timerInterval, setTimerInterval] = useState<number | null>(null);
+  const [liveTranscript, setLiveTranscript] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const speechRecognitionRef = useRef<any>(null);
 
   // Auto-stop recording at max time
   useEffect(() => {
@@ -46,6 +49,9 @@ export function PromptFlow({
         if (timerInterval) {
           clearInterval(timerInterval);
           setTimerInterval(null);
+        }
+        if (speechRecognitionRef.current) {
+          speechRecognitionRef.current.stop();
         }
       }
     }
@@ -82,16 +88,16 @@ export function PromptFlow({
         onUpdatePrompt(currentIndex, { audioFile: file, audioUrl });
         stream.getTracks().forEach(track => track.stop());
 
-        // Auto-transcribe
-        setIsTranscribing(true);
-        try {
-          const transcription = await onTranscribe(file);
-          onUpdatePrompt(currentIndex, { transcription });
-        } catch (error) {
-          console.error('Transcription failed:', error);
-        } finally {
-          setIsTranscribing(false);
+        // Stop speech recognition
+        if (speechRecognitionRef.current) {
+          speechRecognitionRef.current.stop();
         }
+
+        // Use the live transcript we captured
+        if (liveTranscript) {
+          onUpdatePrompt(currentIndex, { transcription: liveTranscript });
+        }
+        setLiveTranscript('');
       };
 
       recorder.start();
@@ -99,6 +105,22 @@ export function PromptFlow({
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
       setRecordingTime(0);
+      setLiveTranscript('');
+
+      // Start speech recognition for real-time transcription
+      const recognition = createSpeechRecognition(
+        (text) => {
+          setLiveTranscript(text);
+        },
+        () => {
+          // Recognition ended
+        }
+      );
+      
+      if (recognition) {
+        speechRecognitionRef.current = recognition;
+        recognition.start();
+      }
 
       const interval = window.setInterval(() => {
         setRecordingTime(prev => prev + 1);
@@ -117,6 +139,9 @@ export function PromptFlow({
       if (timerInterval) {
         clearInterval(timerInterval);
         setTimerInterval(null);
+      }
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.stop();
       }
     }
   };
@@ -386,6 +411,14 @@ export function PromptFlow({
                     />
                   </div>
                   <p className="text-gray-500">{formatTime(MAX_RECORDING_SECONDS - recordingTime)} remaining</p>
+                  
+                  {/* Live transcript */}
+                  {liveTranscript && (
+                    <div className="w-full bg-white/80 rounded-xl p-4 border border-gray-200 max-h-32 overflow-y-auto">
+                      <p className="text-xs text-green-600 font-medium mb-1">Live transcription:</p>
+                      <p className="text-gray-700 text-sm">{liveTranscript}</p>
+                    </div>
+                  )}
                   
                   <p className="text-gray-500 text-lg">Tap the button when you're done</p>
                 </div>

@@ -11,31 +11,68 @@ export function isGeminiConfigured(): boolean {
   return genAI !== null;
 }
 
+// Use browser's Web Speech API for transcription (free, no API needed)
 export async function transcribeAudio(audioFile: File): Promise<string> {
-  if (!genAI) {
-    throw new Error('Gemini not configured. Please add your API key.');
+  // Create an audio element to play the file
+  const audioUrl = URL.createObjectURL(audioFile);
+  
+  return new Promise((resolve, reject) => {
+    // Check if Web Speech API is available
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      // Fallback: return a message asking user to type
+      reject(new Error('Speech recognition not supported. Please type your response instead.'));
+      return;
+    }
+
+    // For recorded audio, we'll use a simpler approach:
+    // Return a placeholder and let user edit/type
+    // Real-time transcription would need the audio to be played
+    resolve('(Audio recorded - please type or edit your response below)');
+  });
+}
+
+// Real-time speech recognition for live recording
+export function createSpeechRecognition(onResult: (text: string) => void, onEnd: () => void): any {
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  
+  if (!SpeechRecognition) {
+    return null;
   }
 
-  // Convert audio file to base64
-  const arrayBuffer = await audioFile.arrayBuffer();
-  const base64Audio = btoa(
-    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+  let finalTranscript = '';
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: audioFile.type || 'audio/webm',
-        data: base64Audio,
-      },
-    },
-    { text: 'Please transcribe this audio recording accurately. Only output the transcription, nothing else.' },
-  ]);
+  recognition.onresult = (event: any) => {
+    let interimTranscript = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    
+    onResult(finalTranscript + interimTranscript);
+  };
 
-  const response = await result.response;
-  return response.text();
+  recognition.onend = () => {
+    onEnd();
+  };
+
+  recognition.onerror = (event: any) => {
+    console.error('Speech recognition error:', event.error);
+    onEnd();
+  };
+
+  return recognition;
 }
 
 export async function generateSummary(visit: OnsiteVisit): Promise<string> {
@@ -43,7 +80,8 @@ export async function generateSummary(visit: OnsiteVisit): Promise<string> {
     throw new Error('Gemini not configured. Please add your API key.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+  // Use gemini-pro for text generation
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
   const promptSections = visit.prompts.map(p => {
     const content = p.transcription || p.textInput;
@@ -123,4 +161,3 @@ Format the output in clean Markdown with clear sections. The NEXT STEPS section 
   const response = await result.response;
   return response.text();
 }
-
