@@ -57,6 +57,17 @@ export function PromptFlow({
     }
   }, [recordingTime, isRecording, timerInterval]);
 
+  // Cleanup when navigating away (currentIndex changes)
+  useEffect(() => {
+    // Reset playback state when changing prompts
+    if (audioElement) {
+      audioElement.pause();
+      setAudioElement(null);
+      setIsPlaying(false);
+    }
+    setLiveTranscript('');
+  }, [currentIndex]);
+
   const currentPrompt = prompts[currentIndex];
   const hasContent = currentPrompt?.audioUrl || currentPrompt?.textInput || currentPrompt?.transcription;
   const completedCount = prompts.filter(p => p.audioUrl || p.textInput || p.transcription).length;
@@ -198,13 +209,41 @@ export function PromptFlow({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleContinue = () => {
+  // Stop any active recording/playback before navigation
+  const stopAllMedia = () => {
+    // Stop recording if active
+    if (isRecording && mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.stop();
+      }
+    }
+    // Stop playback if active
     if (audioElement) {
       audioElement.pause();
       setAudioElement(null);
       setIsPlaying(false);
     }
+  };
+
+  const handleContinue = () => {
+    stopAllMedia();
     onNext();
+  };
+
+  const handlePrevious = () => {
+    stopAllMedia();
+    onPrevious();
+  };
+
+  const handleSkip = () => {
+    stopAllMedia();
+    onSkip();
   };
 
   if (!currentPrompt) return null;
@@ -479,7 +518,7 @@ export function PromptFlow({
       {/* Navigation */}
       <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
         <button
-          onClick={onPrevious}
+          onClick={handlePrevious}
           disabled={currentIndex === 0}
           className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
         >
@@ -488,7 +527,7 @@ export function PromptFlow({
         </button>
 
         <button
-          onClick={onSkip}
+          onClick={handleSkip}
           className="flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
         >
           Skip
