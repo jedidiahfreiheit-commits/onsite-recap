@@ -203,7 +203,15 @@ export default function App() {
       console.log('Starting summary generation...');
       const summary = await generateSummary(visit);
       console.log('Summary generated successfully!');
-      updateVisit({ generatedSummary: summary });
+      console.log('Summary length:', summary?.length);
+      console.log('Summary preview:', summary?.substring(0, 200));
+      
+      // Update visit with summary
+      const updatedVisit = { ...visit, generatedSummary: summary, updatedAt: new Date().toISOString() };
+      setVisit(updatedVisit);
+      saveVisit(updatedVisit);
+      
+      console.log('Visit updated, switching to summary step');
       setStep('summary');
     } catch (error: any) {
       console.error('Failed to generate summary:', error);

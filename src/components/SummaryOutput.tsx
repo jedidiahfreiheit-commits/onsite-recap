@@ -186,7 +186,10 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
     }
   };
 
+  console.log('SummaryOutput render - generatedSummary:', visit.generatedSummary?.substring(0, 100));
+  
   if (!visit.generatedSummary) {
+    console.log('SummaryOutput: No summary found in visit');
     return (
       <div className="bg-white rounded-2xl border border-gray-200 p-12 shadow-lg text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
