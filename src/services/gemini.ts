@@ -68,7 +68,7 @@ export function createSpeechRecognition(onResult: (text: string) => void, onEnd:
 
 export async function generateSummary(visit: OnsiteVisit): Promise<string> {
   if (!apiKey) {
-    throw new Error('Gemini not configured. Please add your API key.');
+    throw new Error('API key not configured. Please add your API key in Settings.');
   }
 
   const promptSections = visit.prompts.map(p => {
@@ -145,35 +145,58 @@ Please generate a polished executive summary that:
 
 Format the output in clean Markdown with clear sections. The NEXT STEPS section should be prominently displayed with clear formatting so it's impossible to miss. Use checkboxes (- [ ]) for each action item.`;
 
-  // Use REST API directly with v1 endpoint (not v1beta)
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-        }
-      })
-    }
-  );
+  // Try multiple Gemini model names until one works
+  const modelsToTry = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-flash-latest', 
+    'gemini-1.5-flash',
+    'gemini-pro'
+  ];
 
-  if (!response.ok) {
-    const error = await response.json();
-    console.error('Gemini API error:', error);
-    throw new Error(error.error?.message || 'Failed to generate summary');
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4096,
+            }
+          })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          console.log(`Successfully used model: ${modelName}`);
+          return text;
+        }
+      } else {
+        const error = await response.json();
+        console.log(`Model ${modelName} failed:`, error.error?.message);
+        lastError = error;
+      }
+    } catch (err) {
+      console.log(`Model ${modelName} error:`, err);
+      lastError = err;
+    }
   }
 
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Failed to generate summary.';
+  // If all models failed, throw the last error
+  throw new Error(lastError?.error?.message || 'Failed to generate summary. Please check your API key.');
 }
-// Deploy 1767995653
