@@ -102,17 +102,21 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
   };
 
   if (!visit.generatedSummary) {
-    return null;
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
+        <p className="text-gray-500 text-center">No summary generated yet.</p>
+      </div>
+    );
   }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-midnight-800 to-midnight-900 rounded-2xl border border-shiphero-red/30 p-6 shadow-xl shadow-shiphero-red/5"
+      className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg"
     >
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-display font-bold text-white">Generated Summary</h3>
+        <h3 className="text-xl font-display font-bold text-gray-900">Generated Summary</h3>
         <div className="flex items-center gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -120,8 +124,8 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
             onClick={handleCopy}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               copied 
-                ? 'bg-sage-500/20 text-sage-400' 
-                : 'bg-midnight-700 hover:bg-midnight-600 text-gray-300'
+                ? 'bg-green-100 text-green-600' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -132,7 +136,7 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleDownloadPdf}
-            className="flex items-center gap-2 px-4 py-2 bg-midnight-700 hover:bg-midnight-600 rounded-lg text-gray-300 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors"
           >
             <Download className="w-4 h-4" />
             PDF
@@ -145,8 +149,8 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
             disabled={isUploading}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               uploadSuccess
-                ? 'bg-sage-500/20 text-sage-400'
-                : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400'
+                ? 'bg-green-100 text-green-600'
+                : 'bg-shiphero-blue/10 hover:bg-shiphero-blue/20 text-shiphero-blue'
             }`}
           >
             {isUploading ? (
@@ -162,12 +166,12 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
       </div>
 
       {visit.driveFileId && (
-        <div className="mb-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+        <div className="mb-4 p-3 bg-shiphero-blue/10 rounded-lg border border-shiphero-blue/20">
           <a
             href={getDriveFileUrl(visit.driveFileId)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300"
+            className="flex items-center gap-2 text-sm text-shiphero-blue hover:text-blue-700"
           >
             <ExternalLink className="w-4 h-4" />
             View in Google Drive
@@ -175,14 +179,13 @@ export function SummaryOutput({ visit, onDriveUpload }: SummaryOutputProps) {
         </div>
       )}
 
-      <div className="prose prose-invert max-w-none">
-        <div className="bg-midnight-700/50 rounded-xl p-6 border border-midnight-600 max-h-[600px] overflow-y-auto">
-          <pre className="whitespace-pre-wrap text-gray-300 text-sm font-body leading-relaxed">
+      <div className="prose max-w-none">
+        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 max-h-[600px] overflow-y-auto">
+          <div className="whitespace-pre-wrap text-gray-800 text-sm leading-relaxed">
             {visit.generatedSummary}
-          </pre>
+          </div>
         </div>
       </div>
     </motion.div>
   );
 }
-
