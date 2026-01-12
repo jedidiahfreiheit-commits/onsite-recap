@@ -63,11 +63,13 @@ export default function App() {
     const savedGeminiKey = localStorage.getItem('gemini-api-key');
     const savedGoogleClientId = localStorage.getItem('google-client-id');
     
-    // Use saved key, env variable, or empty
-    const keyToUse = savedGeminiKey || import.meta.env.VITE_GEMINI_API_KEY || '';
+    // Use saved key, env variable, or fallback
+    const FALLBACK_KEY = 'AIzaSyArvMV1CzC-9N6p_vFhQloFAYbKN88bUp8';
+    const keyToUse = savedGeminiKey || import.meta.env.VITE_GEMINI_API_KEY || FALLBACK_KEY;
     if (keyToUse) {
       setGeminiKey(keyToUse);
       initializeGemini(keyToUse);
+      console.log('Gemini initialized with key:', keyToUse.substring(0, 10) + '...');
     }
     
     if (savedGoogleClientId) {
@@ -191,18 +193,22 @@ export default function App() {
 
   const handleGenerateSummary = async () => {
     if (!isGeminiConfigured()) {
+      alert('Please configure your Gemini API key in Settings first.');
       setShowSettings(true);
       return;
     }
 
     setIsGenerating(true);
     try {
+      console.log('Starting summary generation...');
       const summary = await generateSummary(visit);
+      console.log('Summary generated successfully!');
       updateVisit({ generatedSummary: summary });
       setStep('summary');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate summary:', error);
-      alert('Failed to generate summary. Please check your API key and try again.');
+      const errorMessage = error?.message || 'Unknown error';
+      alert(`Failed to generate summary: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }
