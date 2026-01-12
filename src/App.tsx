@@ -504,13 +504,36 @@ export default function App() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
               >
-                <button
-                  onClick={() => currentPromptIndex === 0 ? setStep('customer-info') : handlePreviousPrompt()}
-                  className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-8 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </button>
+                <div className="flex items-center justify-between mb-8">
+                  <button
+                    onClick={() => currentPromptIndex === 0 ? setStep('customer-info') : handlePreviousPrompt()}
+                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </button>
+
+                  {/* Generate Summary button - always available */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGenerateSummary}
+                    disabled={isGenerating}
+                    className="flex items-center gap-2 px-4 py-2 bg-shiphero-red/10 hover:bg-shiphero-red/20 text-shiphero-red rounded-lg transition-colors text-sm font-medium"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Generate Summary Now
+                      </>
+                    )}
+                  </motion.button>
+                </div>
 
                 <PromptFlow
                   prompts={visit.prompts}
@@ -535,20 +558,51 @@ export default function App() {
                 exit={{ opacity: 0, x: -50 }}
                 className="space-y-8"
               >
-                <button
-                  onClick={() => { setStep('prompts'); setCurrentPromptIndex(visit.prompts.length - 1); }}
-                  className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to questions
-                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => { setStep('prompts'); setCurrentPromptIndex(visit.prompts.length - 1); }}
+                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to questions
+                  </button>
+                </div>
 
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-display font-bold text-gray-900 mb-2">
-                    Additional Details
-                  </h2>
-                  <p className="text-gray-500">
-                    Add any extra context to enrich your summary
+                {/* Generate Summary - Primary CTA at top */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-shiphero-red to-red-600 rounded-2xl p-6 text-white shadow-xl"
+                >
+                  <h2 className="text-2xl font-display font-bold mb-2">Ready to generate your summary?</h2>
+                  <p className="text-white/80 mb-4">You can add optional details below, or generate now with what you have.</p>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGenerateSummary}
+                    disabled={isGenerating}
+                    className="px-8 py-3 bg-white text-shiphero-red rounded-xl font-semibold shadow-lg hover:bg-gray-100 transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Generate Summary Now
+                      </>
+                    )}
+                  </motion.button>
+                </motion.div>
+
+                <div className="text-center">
+                  <h3 className="text-xl font-display font-bold text-gray-900 mb-1">
+                    Optional: Add More Details
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    These sections are optional and will enrich your summary if filled in
                   </p>
                 </div>
 
@@ -587,26 +641,28 @@ export default function App() {
                   />
                 </div>
 
-                {/* Generate Summary */}
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={handleGenerateSummary}
-                  disabled={isGenerating}
-                  className="w-full py-5 bg-shiphero-red hover:bg-red-600 rounded-2xl font-display font-semibold text-white text-xl shadow-xl shadow-shiphero-red/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      Generating Summary...
-                    </>
-                  ) : (
-                    <>
-                      <ShipHeroLogo className="w-6 h-6" />
-                      Generate AI Summary
-                    </>
-                  )}
-                </motion.button>
+                {/* Generate Summary - Secondary button at bottom */}
+                <div className="pt-6 border-t border-gray-200">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={handleGenerateSummary}
+                    disabled={isGenerating}
+                    className="w-full py-4 bg-shiphero-red hover:bg-red-600 rounded-xl font-semibold text-white shadow-lg shadow-shiphero-red/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Generating Summary...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Generate Summary
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </motion.div>
             )}
 
