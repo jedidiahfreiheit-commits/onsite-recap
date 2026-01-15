@@ -16,6 +16,7 @@ import { FollowUpReminder } from './components/FollowUpReminder';
 import { AttachmentsSection } from './components/AttachmentsSection';
 import { SummaryOutput } from './components/SummaryOutput';
 import { SavedVisits } from './components/SavedVisits';
+import { SummaryRepository } from './components/SummaryRepository';
 import { ProgressTracker } from './components/ProgressTracker';
 
 type Step = 'start' | 'customer-info' | 'prompts' | 'details' | 'summary';
@@ -306,6 +307,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-8"
               >
+                <SummaryRepository onLoadVisit={handleLoadVisit} currentVisitId={visit.id} />
                 <SavedVisits onLoadVisit={handleLoadVisit} currentVisitId={visit.id} />
 
                 <div className="text-center py-16">
